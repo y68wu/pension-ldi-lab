@@ -1,3 +1,5 @@
+import { REPLAY_DAYS, buildReplay } from "./replay.mjs";
+
 const el = (id) => document.getElementById(id);
 const setText = (id, value) => { el(id).textContent = value; };
 const number = new Intl.NumberFormat("en-CA");
@@ -209,32 +211,15 @@ function drawKeyRates(rows) {
   });
 }
 
-function cashBreakdown(book, overlayNotional, scenario) {
-  const { terms, rate_grid: grid } = book;
-  const rate = grid.find((point) => point.bps === scenario.rate_shock_bps);
-  if (!rate) throw new RangeError("Choose a rate shock on the modeled grid.");
-  const equity = terms.equity_value * (1 - scenario.equity_drop) * terms.equity_monetizable * (1 - terms.equity_haircut);
-  const longBonds = terms.long_bonds_value * rate.long_bonds_ratio * terms.long_bonds_monetizable * (1 - terms.long_bonds_haircut);
-  const credit = terms.credit_value * rate.credit_ratio * terms.credit_monetizable * (1 - terms.credit_haircut);
-  const variationMargin = Math.max(0, -overlayNotional * rate.unit_swap_pv);
-  const capitalCall = terms.private_equity_value * scenario.capital_call;
-  const resources = equity + longBonds + credit;
-  const outflows = variationMargin + capitalCall + terms.benefits_30d;
-  return {
-    resources, outflows, headroom: resources - outflows, coverage: resources / outflows,
-    variationMargin, capitalCall, benefits: terms.benefits_30d,
-  };
-}
-
-function drawCash(book, selected, scenario) {
-  const data = cashBreakdown(book, selected.overlay_notional, scenario);
+function drawCash(selected, data) {
+  const { scenario } = data;
   const shortfall = data.headroom < 0;
   setText("stress-target", `${ratio(selected.hedge_ratio)} TARGET`);
   setText("stress-result-title", shortfall ? "Cash shortfall" : "Cash cushion");
   setText("stress-headroom", `CAD ${money(data.headroom)}`);
   el("stress-headroom").dataset.shortfall = String(shortfall);
-  setText("stress-coverage", `${decimal(data.coverage, 2)}× COVERAGE`);
-  setText("stress-applied", `Applied: equity −${ratio(scenario.equity_drop)} · rates +${scenario.rate_shock_bps} bp · PE call ${ratio(scenario.capital_call)}`);
+  setText("stress-coverage", data.coverage === null ? "NO OUTFLOWS YET" : `${decimal(data.coverage, 2)}× COVERAGE`);
+  setText("stress-applied", `Day ${data.day}: equity −${ratio(scenario.equity_drop)} · rates +${decimal(scenario.rate_shock_bps, 0)} bp · PE call ${ratio(scenario.capital_call)}`);
   const chart = el("stress-chart");
   chart.replaceChildren();
   const max = Math.max(data.resources, data.outflows, 1);
@@ -262,6 +247,160 @@ function drawCash(book, selected, scenario) {
   });
 }
 
+function drawReplayChart(frames) {
+  const chart = el("replay-chart");
+  chart.replaceChildren();
+  const frame = { left: 68, right: 732, top: 22, bottom: 249 };
+  const domain = roundedDomain([0, ...frames.flatMap((row) => [row.headroom, row.variationMargin])], 25e6);
+  const x = scale([0, REPLAY_DAYS], [frame.left, frame.right]);
+  const y = scale(domain, [frame.bottom, frame.top]);
+  svg(chart, "rect", {
+    x: frame.left, y: y(0), width: frame.right - frame.left, height: frame.bottom - y(0),
+    fill: "#f3ba93", opacity: .08,
+  });
+  for (let i = 0; i <= 5; i += 1) {
+    const value = domain[0] + (domain[1] - domain[0]) * i / 5;
+    gridLine(chart, frame.left, y(value), frame.right, y(value));
+    axisText(chart, frame.left - 11, y(value) + 4, decimal(value / 1e6, 0), { "text-anchor": "end" });
+  }
+  [0, 5, 10, 15, 20, 25, 30].forEach((day) => {
+    gridLine(chart, x(day), frame.top, x(day), frame.bottom);
+    axisText(chart, x(day), frame.bottom + 23, String(day));
+  });
+  svg(chart, "line", { x1: frame.left, x2: frame.right, y1: y(0), y2: y(0), class: "replay-zero" });
+  axisText(chart, (frame.left + frame.right) / 2, 293, "SIMULATED DAY");
+  const defs = svg(chart, "defs", {});
+  const clip = svg(defs, "clipPath", { id: "replay-progress-clip" });
+  const reveal = svg(clip, "rect", { x: frame.left - 8, y: 0, width: 0, height: 300 });
+  const shown = svg(chart, "g", { "clip-path": "url(#replay-progress-clip)" });
+  svg(shown, "path", { d: pathLine(frames, x, y, "day", "headroom"), class: "replay-headroom", fill: "none" });
+  svg(shown, "path", { d: pathLine(frames, x, y, "day", "variationMargin"), class: "replay-margin", fill: "none" });
+  const firstShortfall = frames.find((row) => row.headroom < 0);
+  if (firstShortfall) {
+    titledMark(shown, "circle", {
+      cx: x(firstShortfall.day), cy: y(firstShortfall.headroom), r: 5.5,
+      fill: "#f3ba93", stroke: "#18362d", "stroke-width": 2,
+    }, `First modeled shortfall · day ${firstShortfall.day}`);
+  }
+  const cursor = svg(chart, "line", { y1: frame.top, y2: frame.bottom, class: "replay-cursor" });
+  const headroom = svg(chart, "circle", { r: 5.5, fill: "#a9e7c9", stroke: "#18362d", "stroke-width": 2 });
+  const margin = svg(chart, "circle", { r: 5.5, fill: "#f3ba93", stroke: "#18362d", "stroke-width": 2 });
+
+  return (progress) => {
+    const day = Math.floor(progress);
+    const row = frames[day], next = frames[Math.min(day + 1, REPLAY_DAYS)];
+    const fraction = progress - day;
+    const pos = x(progress);
+    const valueAt = (key) => y(row[key] + (next[key] - row[key]) * fraction);
+    reveal.setAttribute("width", pos - frame.left + 8.5);
+    cursor.setAttribute("x1", pos);
+    cursor.setAttribute("x2", pos);
+    headroom.setAttribute("cx", pos);
+    headroom.setAttribute("cy", valueAt("headroom"));
+    margin.setAttribute("cx", pos);
+    margin.setAttribute("cy", valueAt("variationMargin"));
+  };
+}
+
+function setupReplay(book) {
+  const scrub = el("replay-scrub");
+  const play = el("replay-play");
+  const restart = el("replay-restart");
+  const speed = el("replay-speed");
+  const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+  let selected, frames, moveChart;
+  let progress = REPLAY_DAYS;
+  let drawnDay = -1;
+  let request = null;
+  let previousTime = null;
+
+  function render() {
+    const day = Math.floor(progress);
+    moveChart(reducedMotion.matches ? day : progress);
+    if (day === drawnDay) return;
+    drawnDay = day;
+    const row = frames[day];
+    scrub.value = day;
+    scrub.setAttribute("aria-valuetext", `Day ${day} of ${REPLAY_DAYS}`);
+    setText("replay-day", `Day ${day} / ${REPLAY_DAYS}`);
+    setText("replay-phase", row.phase);
+    setText("replay-buffer", money(row.headroom));
+    setText("replay-vm", money(row.variationMargin));
+    drawCash(selected, row);
+  }
+
+  function pause() {
+    if (request !== null) cancelAnimationFrame(request);
+    request = null;
+    previousTime = null;
+    play.setAttribute("aria-pressed", "false");
+    play.textContent = progress === REPLAY_DAYS ? "Replay" : "Play";
+  }
+
+  function tick(time) {
+    if (previousTime !== null) {
+      const seconds = Math.min(time - previousTime, 100) / 1000;
+      progress = Math.min(REPLAY_DAYS, progress + seconds * 3.3 * Number(speed.value));
+      render();
+    }
+    previousTime = time;
+    if (progress < REPLAY_DAYS) {
+      request = requestAnimationFrame(tick);
+    } else {
+      pause();
+      const final = frames.at(-1);
+      const result = final.headroom < 0 ? "cash shortfall" : "cash headroom";
+      setText("replay-status", `Replay complete. Day ${REPLAY_DAYS} ${result}: CAD ${money(Math.abs(final.headroom))}.`);
+    }
+  }
+
+  function start(reset = true) {
+    pause();
+    if (reset || progress === REPLAY_DAYS) progress = 0;
+    render();
+    play.setAttribute("aria-pressed", "true");
+    play.textContent = "Pause";
+    setText("replay-status", `Playing from day ${Math.floor(progress)}.`);
+    request = requestAnimationFrame(tick);
+  }
+
+  play.addEventListener("click", () => {
+    if (request === null) start(false);
+    else {
+      pause();
+      setText("replay-status", `Paused at day ${Math.floor(progress)}.`);
+    }
+  });
+  restart.addEventListener("click", () => start());
+  scrub.addEventListener("input", () => {
+    progress = Number(scrub.value);
+    pause();
+    render();
+    setText("replay-status", `Showing day ${progress}.`);
+  });
+
+  return {
+    launch() {
+      el("replay").scrollIntoView({ behavior: reducedMotion.matches ? "instant" : "smooth", block: "start" });
+      start();
+    },
+    update(row, scenario) {
+      selected = row;
+      frames = buildReplay(book, row.overlay_notional, scenario);
+      moveChart = drawReplayChart(frames);
+      drawnDay = -1;
+      for (const control of [play, restart, scrub, speed]) control.disabled = false;
+      render();
+      if (request === null) {
+        pause();
+        setText("replay-status", progress === REPLAY_DAYS
+          ? "Showing the end of the scenario. Replay to see how it develops."
+          : `Showing day ${Math.floor(progress)} with the selected hedge.`);
+      }
+    },
+  };
+}
+
 function main(data) {
   const { meta, baseline, frontier, liquidity, portfolio, benefits, key_rates: keyRates, histogram_edges: edges } = data;
   const slider = el("hedge-ratio");
@@ -272,6 +411,7 @@ function main(data) {
   const presets = [el("hedge-natural"), el("hedge-sample"), el("hedge-full")];
   let selected = baseline;
   let scenario = { ...liquidity.default };
+  const replay = setupReplay(liquidity);
 
   function readControls() {
     return {
@@ -314,7 +454,7 @@ function main(data) {
     drawFrontier(frontier, baseline, selected);
     drawDistribution(edges, selected, meta.paths);
     drawRisk(selected.risk_contributions ?? data.risk_contributions);
-    drawCash(liquidity, selected, scenario);
+    replay.update(selected, scenario);
   }
 
   setText("hero-funding", ratio(meta.initial_funding_ratio));
@@ -344,12 +484,14 @@ function main(data) {
   el("stress-form").addEventListener("submit", (event) => {
     event.preventDefault();
     scenario = readControls();
-    drawCash(liquidity, selected, scenario);
+    replay.update(selected, scenario);
+    replay.launch();
   });
   el("stress-sample").addEventListener("click", () => {
     scenario = { ...liquidity.default };
     fillStressControls(scenario);
     renderHedge(full, presets[2]);
+    replay.launch();
   });
   fillStressControls(scenario);
   renderHedge(baseline, presets[0]);

@@ -60,6 +60,8 @@ The minimum-SaR target on the one-point grid moves from 83% with the full calibr
 
 The 30-day liquidity test combines a 30% equity decline, a +200 bp parallel shift and a capital call equal to 20% of the opening private equity sleeve. It adds one month of benefits and cash variation margin equal to the negative swap mark. The fully hedged case requires CAD 162.1M of margin. Eligible proceeds come from selling capped portions of stressed public equity, long bonds and credit after haircuts. Real assets and private equity provide no eligible proceeds in this test. The 20% / 25% / 15% sale caps and 5% / 3% / 10% haircuts are illustrative. The model excludes contributions, repo capacity and positive margin receipts. [Cash waterfall](reports/liquidity.csv), [Bank of Canada pension liquidity research](https://www.bankofcanada.ca/2021/05/staff-analytical-note-2021-11/).
 
+The website replays an illustrative path into the same endpoint. Equity losses build through day 14, rate shocks and swap margin through day 21, and private capital calls settle in two tranches on days 18 and 24. Benefits accrue evenly. The displayed headroom is a stressed budget at each day, rather than a ledger of actual asset sales. Run `node --test tests/test_replay.mjs` to check that the browser replay reproduces the published day-30 stress results.
+
 ## Limitations
 
 - The plan and cash flows are fictional. Benefit indexation, mortality, contributions, sponsor support and plan rules are outside scope.

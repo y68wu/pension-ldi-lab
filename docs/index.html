@@ -134,9 +134,9 @@
             <label for="stress-call">Private capital call <output id="stress-call-value" for="stress-call">—</output></label>
             <input id="stress-call" type="range" min="0" max="100" step="1" value="20">
             <div class="actions"><button class="button primary" type="submit">Run scenario <span aria-hidden="true">↗</span></button><button type="button" class="button ghost" id="stress-sample">Load sample</button></div>
-            <p class="fine">Uses the hedge selected above. Review the breakdown before comparing scenarios.</p>
+            <p class="fine">Uses the hedge selected above. Run the ticket to watch the shock build over 30 simulated days.</p>
           </form>
-          <div class="liquidity-result" aria-live="polite">
+          <div class="liquidity-result">
             <div class="figure-heading"><div><p class="micro">STRESSED CASH HEADROOM</p><h3 id="stress-result-title">Run a scenario</h3></div><span class="badge" id="stress-coverage">—</span></div>
             <strong id="stress-headroom" class="headroom">—</strong>
             <p id="stress-applied" class="stress-applied"></p>
@@ -144,6 +144,44 @@
             <dl id="stress-breakdown" class="cash-breakdown"></dl>
           </div>
         </div>
+        <section class="replay-card" id="replay" aria-labelledby="replay-title">
+          <div class="replay-heading">
+            <div>
+              <p class="micro">SIMULATION REPLAY / CAD MILLIONS</p>
+              <h3 id="replay-title">Watch the cash buffer move.</h3>
+            </div>
+            <div class="replay-clock">
+              <span class="replay-beacon" aria-hidden="true"></span>
+              <div><strong id="replay-day">Day 0 / 30</strong><span id="replay-phase">Opening position</span></div>
+            </div>
+          </div>
+          <figure class="replay-figure">
+            <svg id="replay-chart" viewBox="0 0 760 300" role="img" aria-label="Cash headroom and variation margin over a 30-day illustrative stress path"></svg>
+            <figcaption class="replay-legend">
+              <span><i class="replay-swatch replay-swatch-headroom" aria-hidden="true"></i>Cash headroom <strong id="replay-buffer">—</strong></span>
+              <span><i class="replay-swatch replay-swatch-margin" aria-hidden="true"></i>Variation margin <strong id="replay-vm">—</strong></span>
+              <span><i class="replay-swatch replay-swatch-zero" aria-hidden="true"></i>Zero cash buffer</span>
+            </figcaption>
+          </figure>
+          <div class="replay-controls">
+            <div class="replay-buttons" aria-label="Replay controls">
+              <button type="button" class="button primary" id="replay-play" aria-pressed="false" disabled>Play replay</button>
+              <button type="button" class="button ghost" id="replay-restart" disabled>Restart</button>
+              <label class="replay-speed" for="replay-speed">Speed
+                <select id="replay-speed" disabled><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select>
+              </label>
+            </div>
+            <div class="replay-track">
+              <label class="micro" for="replay-scrub">SIMULATED DAY</label>
+              <input id="replay-scrub" type="range" min="0" max="30" step="1" value="0" disabled>
+              <div class="replay-scale" aria-hidden="true"><span>Day 0</span><span>Day 15</span><span>Day 30</span></div>
+            </div>
+          </div>
+          <div class="replay-footer">
+            <p id="replay-caption">Illustrative 30-day path, in CAD millions. Drag the timeline to inspect any day.</p>
+            <p id="replay-status" role="status"></p>
+          </div>
+        </section>
         <p class="stress-note" id="stress-note">The stress book uses the cash resources and payment assumptions described in the methodology. The projected headroom is separate from funded status.</p>
       </div>
     </section>
