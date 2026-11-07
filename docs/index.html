@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#112a29">
+  <meta name="description" content="An interactive Canadian pension case study. Hedge liability duration, inspect the funding distribution and stress-test cash.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="LONGVIEW / Pension Risk Lab">
+  <meta property="og:description" content="Set a Canadian pension hedge, compare one-year funding outcomes and run a liquidity stress.">
+  <meta property="og:url" content="https://y68wu.github.io/pension-ldi-lab/">
+  <meta property="og:image" content="https://y68wu.github.io/pension-ldi-lab/assets/share.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <title>LONGVIEW / Pension Risk Lab</title>
+  <link rel="icon" href="assets/mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/site.css">
+  <script src="assets/site.js" type="module"></script>
+</head>
+<body>
+  <a href="#main" class="skip">Skip to content</a>
+  <header class="site-header">
+    <div class="shell nav">
+      <a class="brand" href="./"><img src="assets/mark.svg" alt="" width="30" height="30"><strong>LONGVIEW</strong><span>/ PENSION RISK</span></a>
+      <nav aria-label="Main navigation">
+        <a href="#hedge">Hedge lab</a><a href="#liquidity">Liquidity desk</a><a href="handbook.html">Handbook</a>
+      </nav>
+      <a class="repo" href="https://github.com/y68wu/pension-ldi-lab">Source <span aria-hidden="true">↗</span></a>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="shell hero-grid">
+        <div class="hero-copy">
+          <p class="kicker"><i></i> CANADIAN DB PENSION <span>/</span> CASE STUDY 02</p>
+          <h1 id="hero-title">Fund what’s<br> <em>promised.</em></h1>
+          <p>A defined-benefit plan holds assets today and pays benefits for decades. Adjust its interest-rate hedge, then see how the same decision changes funding risk and the cash needed in a selloff.</p>
+          <div class="actions"><a class="button primary" href="#hedge">Open the hedge lab <span aria-hidden="true">↓</span></a><a class="text-link" href="handbook.html">Read the build handbook <span aria-hidden="true">↗</span></a></div>
+        </div>
+        <figure class="hero-card">
+          <div class="hero-card-head"><span><i></i> BENEFIT SCHEDULE</span><span>FIG. 01</span></div>
+          <svg id="hero-chart" viewBox="0 0 610 265" role="img" aria-label="Projected benefit payments over a 60-year horizon"></svg>
+          <figcaption><span><i></i> PROJECTED ANNUAL BENEFITS</span><span>CAD MILLIONS</span></figcaption>
+        </figure>
+      </div>
+      <dl class="shell hero-metrics" aria-label="Plan at a glance">
+        <div><dt>OPENING FUNDING</dt><dd id="hero-funding">—</dd><span>Assets divided by liability PV</span></div>
+        <div><dt>LIABILITY DURATION</dt><dd id="hero-duration">—</dd><span>Parallel rate sensitivity</span></div>
+        <div><dt>NATURAL HEDGE</dt><dd id="hero-natural">—</dd><span>Opening asset DV01 / liability DV01</span></div>
+        <div><dt>MONTE CARLO PATHS</dt><dd id="hero-paths">—</dd><span>Joint one-year market scenarios</span></div>
+      </dl>
+    </section>
+
+    <section class="band paper" id="hedge" aria-labelledby="hedge-title">
+      <div class="shell">
+        <div class="section-intro">
+          <p class="kicker"><span>01</span> / FUNDING LAB</p>
+          <div><h2 id="hedge-title">Choose your hedge.</h2><p>Set a target for total asset DV01 relative to liability DV01. A receive-fixed swap raises rate sensitivity above the natural hedge. A pay-fixed swap lowers it.</p></div>
+        </div>
+        <div class="hedge-control">
+          <div class="control-top">
+            <div><label for="hedge-ratio" class="micro">TARGET DV01 COVERAGE</label><output id="hedge-output" for="hedge-ratio">—</output></div>
+            <div class="presets" aria-label="Hedge presets">
+              <button type="button" id="hedge-natural">Natural book</button><button type="button" id="hedge-sample">Default cash screen</button><button type="button" id="hedge-full">Match DV01</button>
+            </div>
+          </div>
+          <input id="hedge-ratio" type="range" min="0" max="100" step="1" value="75" disabled aria-describedby="hedge-note">
+          <div class="axis-labels"><span>0% <small>Unmatched</small></span><span>100% <small>Parallel DV01 match</small></span></div>
+          <p id="hedge-note" class="control-note">Choose a modeled target or return to the actual opening asset DV01 with no overlay.</p>
+        </div>
+        <div class="metrics-row" aria-live="polite">
+          <div><span class="micro">95% SURPLUS-AT-RISK</span><strong id="hedge-sar">—</strong><span>5th-percentile downside vs. opening surplus</span></div>
+          <div><span class="micro">EXPECTED SURPLUS</span><strong id="hedge-surplus">—</strong><span>Mean one-year assets less liabilities</span></div>
+          <div><span class="micro">P(FUNDING &lt; 100%)</span><strong id="hedge-under">—</strong><span>Share of simulated underfunded paths</span></div>
+          <div><span class="micro">SWAP OVERLAY</span><strong id="hedge-notional">—</strong><span id="hedge-direction">Based on opening DV01 gap</span></div>
+        </div>
+
+        <aside id="tradeoff-callout" class="tradeoff-callout" hidden></aside>
+        <div class="chart-grid">
+          <figure class="figure frontier">
+            <div class="figure-heading"><div><p class="micro">RISK / EXPECTED SURPLUS</p><h3>Hedge frontier</h3></div><span class="badge" id="frontier-current">—</span></div>
+            <svg id="frontier-chart" viewBox="0 0 560 330" role="img" aria-label="Hedge frontier for expected surplus versus surplus at risk"></svg>
+            <figcaption><span><i></i> Selected target</span><span><i class="square"></i> Natural book</span></figcaption>
+          </figure>
+          <figure class="figure distribution">
+            <div class="figure-heading"><div><p class="micro">ONE-YEAR OUTCOMES</p><h3>Funding distribution</h3></div><span class="badge" id="distribution-under">—</span></div>
+            <svg id="distribution-chart" viewBox="0 0 560 330" role="img" aria-label="Distribution of the simulated one-year funding ratio"></svg>
+            <figcaption><span><i class="risk-dot"></i> Underfunded paths</span><span><i></i> Funded paths</span></figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <section class="band pale" id="attribution" aria-labelledby="attribution-title">
+      <div class="shell">
+        <div class="section-intro">
+          <p class="kicker"><span>02</span> / RISK ATTRIBUTION</p>
+          <div><h2 id="attribution-title">What drives the deficit?</h2><p>Euler contributions allocate the standard deviation of surplus changes across asset exposures and the net interest-rate mismatch. A negative contribution reduces total volatility.</p></div>
+        </div>
+        <div class="attribution-grid">
+          <div class="figure contribution">
+            <div class="figure-heading"><div><p class="micro">CAD CONTRIBUTION TO SURPLUS VOLATILITY</p><h3>Euler decomposition</h3></div><span class="badge" id="attribution-target">—</span></div>
+            <div id="risk-bars" class="risk-bars"></div>
+          </div>
+          <div class="allocation">
+            <p class="micro">OPENING ASSET MIX</p>
+            <h3>What the plan holds</h3>
+            <div id="allocation-strip" class="allocation-strip" aria-hidden="true"></div>
+            <dl id="allocation-list"></dl>
+            <p class="fine">Listed proxies anchor the public-data calibration. Private marks and their desmoothing are modeled illustrations.</p>
+          </div>
+        </div>
+        <figure class="figure key-rates" id="key-rate-card" hidden>
+          <div class="figure-heading"><div><p class="micro">OPENING PARALLEL RISK BY TENOR</p><h3>Key-rate DV01</h3></div><span class="badge">BEFORE OVERLAY</span></div>
+          <svg id="key-rate-chart" viewBox="0 0 780 245" role="img" aria-label="Opening asset and liability DV01 by Government of Canada curve tenor"></svg>
+          <figcaption><span><i></i> Liability DV01</span><span><i class="square"></i> Asset DV01</span><span>CAD thousands per basis point</span></figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="band dark" id="liquidity" aria-labelledby="liquidity-title">
+      <div class="shell">
+        <div class="section-intro">
+          <p class="kicker"><span>03</span> / LIQUIDITY DESK</p>
+          <div><h2 id="liquidity-title">Can the plan pay today?</h2><p>Combine falling equity prices with higher rates. A receive-fixed overlay can demand variation margin just as pension payments and private capital calls come due.</p></div>
+        </div>
+        <div class="liquidity-grid">
+          <form id="stress-form" class="stress-controls">
+            <div class="figure-heading"><div><p class="micro">SCENARIO TICKET</p><h3>Enter a shock</h3></div><span class="badge" id="stress-target">—</span></div>
+            <label for="stress-equity">Equity drawdown <output id="stress-equity-value" for="stress-equity">30%</output></label>
+            <input id="stress-equity" type="range" min="0" max="60" step="1" value="30">
+            <label for="stress-rates">Parallel rate rise <output id="stress-rates-value" for="stress-rates">200 bp</output></label>
+            <input id="stress-rates" type="range" min="0" max="400" step="10" value="200">
+            <label for="stress-call">Private capital call <output id="stress-call-value" for="stress-call">—</output></label>
+            <input id="stress-call" type="range" min="0" max="100" step="1" value="20">
+            <div class="actions"><button class="button primary" type="submit">Run scenario <span aria-hidden="true">↗</span></button><button type="button" class="button ghost" id="stress-sample">Load sample</button></div>
+            <p class="fine">Uses the hedge selected above. Review the breakdown before comparing scenarios.</p>
+          </form>
+          <div class="liquidity-result" aria-live="polite">
+            <div class="figure-heading"><div><p class="micro">STRESSED CASH HEADROOM</p><h3 id="stress-result-title">Run a scenario</h3></div><span class="badge" id="stress-coverage">—</span></div>
+            <strong id="stress-headroom" class="headroom">—</strong>
+            <p id="stress-applied" class="stress-applied"></p>
+            <div id="stress-chart" class="cash-bars"></div>
+            <dl id="stress-breakdown" class="cash-breakdown"></dl>
+          </div>
+        </div>
+        <p class="stress-note" id="stress-note">The stress book uses the cash resources and payment assumptions described in the methodology. The projected headroom is separate from funded status.</p>
+      </div>
+    </section>
+
+    <section class="band paper" id="method" aria-labelledby="method-title">
+      <div class="shell">
+        <div class="section-intro">
+          <p class="kicker"><span>04</span> / MODEL NOTES</p>
+          <div><h2 id="method-title">Follow the cash flows.</h2><p>This case study combines a synthetic defined-benefit plan, published Canadian zero yields and monthly total-return proxies. It is an illustrative portfolio research model.</p></div>
+        </div>
+        <div class="method-grid">
+          <article><span class="micro">01 / LIABILITY VALUATION</span><h3>Discount 60 years</h3><p>Project annual benefits and value them against the Government of Canada curve plus a fixed spread. Verify analytical key-rate DV01 against curve bumps.</p></article>
+          <article><span class="micro">02 / JOINT SCENARIOS</span><h3>Move both sides</h3><p>Simulate the asset proxies and curve jointly so a rate change affects the assets and discounted liabilities along the same path.</p></article>
+          <article><span class="micro">03 / RATE OVERLAY</span><h3>Size the DV01 gap</h3><p>Use a receive-fixed or pay-fixed overlay to target total DV01. Parallel DV01 coverage can still leave key-rate and growth-asset risk.</p></article>
+        </div>
+        <p class="fine">The minimum-risk target depends on the calibration sample. The full panel favors 83%. Trailing ten- and five-year windows favor 67% and 39%, respectively. <a href="https://github.com/y68wu/pension-ldi-lab/blob/main/reports/calibration_check.csv">Calibration sensitivity ↗</a></p>
+        <dl class="study-strip"><div><dt>Calibration window</dt><dd id="meta-window">—</dd></div><div><dt>Curve as of</dt><dd id="meta-as-of">—</dd></div><div><dt>Public data</dt><dd>Yahoo Finance · Bank of Canada</dd></div><div><a class="text-link" href="https://github.com/y68wu/pension-ldi-lab#readme">Methods &amp; limitations <span aria-hidden="true">↗</span></a></div></dl>
+      </div>
+    </section>
+
+    <section class="handbook-cta">
+      <div class="shell">
+        <div><p class="kicker"><i></i> PROJECT HANDBOOK</p><h2>Four weeks.<br> Twenty-eight entries.</h2><p>A reconstruction of the technical work, from assembling the liability cash flows to validating the hedge and cash-stress exercises.</p></div>
+        <a class="button primary" href="handbook.html">Read the project handbook <span aria-hidden="true">↗</span></a>
+      </div>
+    </section>
+    <div id="data-error" class="data-error" role="alert" hidden>Interactive data could not load. Refresh the page or open the analysis in the source repository.</div>
+    <noscript><p class="data-error">Enable JavaScript to operate the hedge and liquidity labs. The methodology is available in the project handbook.</p></noscript>
+  </main>
+  <footer class="site-footer"><div class="shell"><a class="brand" href="./"><img src="assets/mark.svg" alt="" width="27" height="27"><strong>LONGVIEW</strong><span>/ PENSION RISK</span></a><span>Canadian defined-benefit plan · Illustrative research</span><a href="https://github.com/y68wu/pension-ldi-lab">GitHub ↗</a></div></footer>
+</body>
+</html>

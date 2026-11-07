@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pension-ldi-lab"
+version = "1.0.0"
+description = "Surplus-at-risk, liability-driven investing and liquidity stress for a synthetic Canadian DB plan"
+requires-python = ">=3.10"
+dependencies = [
+    "matplotlib>=3.8,<4",
+    "numpy>=1.26,<3",
+    "pandas>=2.1,<4",
+    "requests>=2.32,<3",
+    "scipy>=1.12,<2",
+    "yfinance>=0.2.54,<2",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8,<10"]
+notebook = ["jupyterlab>=4,<5"]
+
+[project.scripts]
+pension-ldi = "pension_ldi.analysis:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

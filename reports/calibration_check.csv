@@ -1,0 +1,4 @@
+sample,monthly_changes,no_overlay_sar95,minimum_sar_hedge_ratio,minimum_sar95,liquidity_constrained_hedge_ratio
+full sample,166,90033450.85785323,0.83,73295218.92795654,0.76
+trailing 10 years,120,92327910.22346641,0.67,82323443.24282598,0.67
+trailing 5 years,60,26847925.365863528,0.39,26882128.98880793,0.39

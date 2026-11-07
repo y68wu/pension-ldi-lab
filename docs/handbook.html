@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#112a29">
+  <meta name="description" content="A 28-entry technical walkthrough of the LONGVIEW pension surplus-at-risk and liability-driven investment lab.">
+  <title>Project handbook — LONGVIEW / Pension Risk Lab</title>
+  <link rel="icon" href="assets/mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/site.css">
+  <link rel="stylesheet" href="assets/handbook.css">
+</head>
+<body class="guide-page">
+<a href="#main" class="skip">Skip to handbook</a>
+
+<header class="site-header">
+  <div class="shell nav">
+    <a class="brand" href="./"><img src="assets/mark.svg" alt="" width="30" height="30"><strong>LONGVIEW</strong><span>/ PENSION RISK</span></a>
+    <nav aria-label="Main navigation">
+      <a href="index.html#hedge">Hedge lab</a><a href="index.html#liquidity">Liquidity desk</a><a href="handbook.html" aria-current="page">Handbook</a>
+    </nav>
+    <a class="repo" href="https://github.com/y68wu/pension-ldi-lab">Source <span aria-hidden="true">↗</span></a>
+  </div>
+</header>
+
+<main id="main">
+  <section class="guide-hero">
+    <div class="shell">
+      <p class="kicker"><i></i> CANADIAN DB PENSION <span>/</span> BUILD RECORD</p>
+      <h1>Project<br>handbook.</h1>
+      <p>Follow the study from the first benefit payment to the hedge and cash-stress decision. Each entry links an implementation decision to a check and a project artifact.</p>
+      <dl class="guide-meta"><div><dt>04</dt><dd>Illustrative weeks</dd></div><div><dt>28</dt><dd>Calendar entries</dd></div><div><dt>OCT 11 – NOV 07</dt><dd>2026</dd></div></dl>
+    </div>
+  </section>
+  <div class="shell guide-layout">
+    <aside class="guide-side">
+      <nav aria-label="Handbook contents">
+        <h2>Contents</h2>
+        <ol>
+
+          <li><a href="#week-1"><span>01</span> Build the pension balance sheet</a></li>
+          <li><a href="#week-2"><span>02</span> Simulate one-year funding risk</a></li>
+          <li><a href="#week-3"><span>03</span> Set the hedge and test liquidity</a></li>
+          <li><a href="#week-4"><span>04</span> Validate and ship the research</a></li>
+
+        </ol>
+      </nav>
+      <a class="text-link" href="index.html#hedge">Try the hedge lab <span aria-hidden="true">↗</span></a>
+    </aside>
+    <div class="guide-body">
+      <p class="guide-note"><strong>Calendar note.</strong> The dates are illustrative and organize a retrospective walkthrough. The observed calibration and valuation dates are shown separately in the study.</p>
+
+      <section class="guide-week" id="week-1" aria-labelledby="week-1-title">
+        <header>
+          <p class="micro">WEEK 01 / Oct 11–Oct 17</p>
+          <h2 id="week-1-title">Build the pension balance sheet</h2>
+          <p>Define the plan, source public inputs and value the opening assets and liabilities in Canadian dollars.</p>
+        </header>
+        <article class="guide-entry" id="day-01">
+          <div class="guide-date"><span>DAY 01</span><time datetime="2026-10-11">Oct 11 · Sun</time></div>
+          <div>
+            <h3>Set the plan’s opening budget</h3>
+            <p>Start a fictional closed defined-benefit plan with CAD 1.0B of liabilities and CAD 1.05B of assets. Allocate 30% to public equity, 35% to long bonds, 15% to real assets, 10% to private equity and 10% to credit.</p>
+            <p class="guide-check"><strong>Check.</strong> Reconcile the five sleeve balances to CAD 1.05B, a CAD 50M opening surplus and a 105% funding ratio.</p>
+            <a href="https://github.com/y68wu/pension-ldi-lab/blob/main/reports/portfolio.csv">Opening asset mix <span aria-hidden="true">↗</span></a>
+          </div>
+        </article>
+        <article class="guide-entry" id="day-02">
+          <div class="guide-date"><span>DAY 02</span><time datetime="2026-10-12">Oct 12 · Mon</time></div>
+          <div>
+            <h3>Define the benefit schedule</h3>
+            <p>Create annual payments for years 1 through 60 using a hump-shaped runoff. Choose its decay by root finding to produce 15 years of opening liability duration. Scale the payment vector to the target liability PV.</p>
+            <p class="guide-check"><strong>Check.</strong> Confirm all benefit payments are positive, opening PV matches the plan target, and the duration comes from PV weights.</p>
+            <a href="https://github.com/y68wu/pension-ldi-lab/blob/main/reports/benefits.csv">Annual benefit schedule <span aria-hidden="true">↗</span></a>
+          </div>
+        </article>
+        <article class="guide-entry" id="day-03">
+          <div class="guide-date"><span>DAY 03</span><time datetime="2026-10-13">Oct 13 · Tue</time></div>
+          <div>
+            <h3>Acquire and label the zero curve</h3>
+            <p>Read the Bank of Canada’s published zero yields at nine knots from 3 months to 30 years. Store a separate 2026-10-21 valuation snapshot and keep quote dates distinct from the publication lag.</p>
+            <p class="guide-check"><strong>Check.</strong> Verify finite continuously compounded decimal rates in increasing tenor order. Save the exact source URL and both local file hashes.</p>
+            <a href="https://github.com/y68wu/pension-ldi-lab/blob/main/data/market_metadata.json">Market provenance <span aria-hidden="true">↗</span></a>
+          </div>
+        </article>
+        <article class="guide-entry" id="day-04">
+          <div class="guide-date"><span>DAY 04</span><time datetime="2026-10-14">Oct 14 · Wed</time></div>
+          <div>
+            <h3>Select the public proxies</h3>
+            <p>Represent public equity with XIU and VFV, long bonds with XLB, real assets with ZRE and IGF, listed private-equity exposure with PSP, and credit with XCB. Preserve both rates and credit-spread exposure in the credit proxy.</p>
+            <p class="guide-check"><strong>Check.</strong> Check ticker, currency and underlying mandate against the fund issuers. Treat listed exposures as imperfect proxies for private assets.</p>
+            <a href="https://github.com/y68wu/pension-ldi-lab/blob/main/data/README.md">Data and sources <span aria-hidden="true">↗</span></a>
+          </div>
+        </article>
+        <article class="guide-entry" id="day-05">
+          <div class="guide-date"><span>DAY 05</span><time datetime="2026-10-15">Oct 15 · Thu</time></div>
+          <div>
+            <h3>Align prices and CAD exchange rates</h3>
+            <p>Convert USD-listed IGF and PSP to CAD using the same-date USD/CAD close. Use the last joint observed close in each completed month and chain both 50/50 baskets with monthly rebalancing.</p>
+            <p class="guide-check"><strong>Check.</strong> Exercise a fixture with a currency move and a partial final month. Reject any gap in the monthly sequence so a multi-month move cannot enter as a one-month change.</p>
+            <a href="https://github.com/y68wu/pension-ldi-lab/blob/main/tests/test_market.py">Market alignment tests <span aria-hidden="true">↗</span></a>
+          </div>
+        </article>
+        <article class="guide-entry" id="day-06">
+          <div class="guide-date"><span>DAY 06</span><time datetime="2026-10-16">Oct 16 · Fri</time></div>
+          <div>
+            <h3>Price the nominal benefit stream</h3>
+            <p>Linearly interpolate the zero rate at each payment horizon, carry the 30Y yield flat past the last observed knot, and apply a fixed 50 bp liability spread. Discount each payment separately.</p>
+            <p class="guide-check"><strong>Check.</strong> Remove the first benefit from the liability PV after one year, and shorten the maturity of each remaining payment by one year.</p>
+            <a href="https://github.com/y68wu/pension-ldi-lab/blob/main/src/pension_ldi/model.py">Cash-flow valuation <span aria-hidden="true">↗</span></a>
+          </div>
+        </article>
+        <article class="guide-entry" id="day-07">
+          <div class="guide-date"><span>DAY 07</span><time datetime="2026-10-17">Oct 17 · Sat</time></div>
+          <div>
+            <h3>Measure opening DV01 and the natural hedge</h3>
+            <p>Compute positive liability and bond DV01s for individual curve knots. Model the direct long-bond sensitivity with 20Y par cash flows and the direct credit sensitivity with 8Y par cash flows plus a fixed spread.</p>
+            <p class="guide-check"><strong>Check.</strong> Compare the sum of key-rate DV01s with the sensitivity to a parallel 1 bp move. The opening bond and credit sleeves cover about 38.4% of liability DV01.</p>
+            <a href="https://github.com/y68wu/pension-ldi-lab/blob/main/reports/key_rates.csv">Key-rate report <span aria-hidden="true">↗</span></a>
+          </div>
+        </article>
+      </section>
+      <section class="guide-week" id="week-2" aria-labelledby="week-2-title">
+        <header>
+          <p class="micro">WEEK 02 / Oct 18–Oct 24</p>
+          <h2 id="week-2-title">Simulate one-year funding risk</h2>
+          <p>Fit a joint market law, carry both sides of the plan through the same scenarios and decompose the resulting risk.</p>
+        </header>
+        <article class="guide-entry" id="day-08">
+          <div class="guide-date"><span>DAY 08</span><time datetime="2026-10-18">Oct 18 · Sun</time></div>
+          <div>
+            <h3>Convert levels to joint changes</h3>
+            <p>Use 167 joint month-end observations to build 166 monthly moves. Use log total returns for the five asset sleeves and absolute decimal changes for each of the nine GoC yields.</p>
+            <p class="guide-check"><strong>Check.</strong> Check that the first usable change is December 2012 and that the final observation is the last joint September 2026 close. Hold October for the valuation snapshot.</p>
+            <a href="https://github.com/y68wu/pension-ldi-lab/blob/main/src/pension_ldi/market.py">Market panel construction <span aria-hidden="true">↗</span></a>
+          </div>
+        </article>
+        <article class="guide-entry" id="day-09">
+          <div class="guide-date"><span>DAY 09</span><time datetime="2026-10-19">Oct 19 · Mon</time></div>
+          <div>
+            <h3>Demonstrate appraisal smoothing</h3>
+            <p>Apply a one-lag smoothing filter with alpha 0.55 to the CAD-translated listed proxy returns. Invert the filter to illustrate the effect of stale valuations on observed risk.</p>
+            <p class="guide-check"><strong>Check.</strong> The inversion recovers the original listed proxy by construction. Report about 10.0% annualized volatility for the smoothed illustration and 18.5% after reversal. No private NAV data enters the model.</p>
+            <a href="https://github.com/y68wu/pension-ldi-lab/blob/main/reports/summary.json">Smoothing statistics <span aria-hidden="true">↗</span></a>
+          </div>
+        </article>
+        <article class="guide-entry" id="day-10">
+          <div class="guide-date"><span>DAY 10</span><time datetime="2026-10-20">Oct 20 · Tue</time></div>
+          <div>
+            <h3>Separate direct rates from ETF residuals</h3>
+            <p>Reprice the 20Y and 8Y structural sleeves for every historical yield move and subtract the direct repricing effect from the corresponding ETF log returns. Fit residuals and curve changes together.</p>
+            <p class="guide-check"><strong>Check.</strong> In projections, add direct curve repricing back once. Leave carry and other drivers, including credit spread moves, embedded in the historical residuals.</p>
+            <a href="https://github.com/y68wu/pension-ldi-lab/blob/main/src/pension_ldi/model.py">Joint calibration code <span aria-hidden="true">↗</span></a>
+          </div>
+        </article>
+        <article class="guide-entry" id="day-11">
+          <div class="guide-date"><span>DAY 11</span><time datetime="2026-10-21">Oct 21 · Wed</time></div>
+          <div>
+            <h3>Fit the one-year joint law</h3>
+            <p>Estimate a 14-factor monthly mean and covariance from the aligned moves. Aggregate to one year using twelve IID monthly increments and generate 20,000 joint Gaussian paths with a fixed seed.</p>
+            <p class="guide-check"><strong>Check.</strong> Use a covariance factor that handles tiny numerical eigenvalues. Reuse the same draws for every hedge target to make differences attributable to the overlay.</p>
+            <a href="https://github.com/y68wu/pension-ldi-lab/blob/main/src/pension_ldi/model.py">Monte Carlo implementation <span aria-hidden="true">↗</span></a>
+          </div>
+        </article>
+        <article class="guide-entry" id="day-12">
+          <div class="guide-date"><span>DAY 12</span><time datetime="2026-10-22">Oct 22 · Thu</time></div>
+          <div>
+            <h3>Roll the plan forward</h3>
+            <p>Compound residual returns, revalue the direct bond and credit rate exposures, and discount remaining benefits along each shocked curve. Deduct the year-one benefit from assets when it leaves liabilities.</p>
+            <p class="guide-check"><strong>Check.</strong> Review the timing in a zero-shock path and make sure that the year-one payment is reflected once on each side of the balance sheet.</p>
+            <a href="https://github.com/y68wu/pension-ldi-lab/blob/main/src/pension_ldi/model.py">Projection and model checks <span aria-hidden="true">↗</span></a>
+          </div>
+        </article>
+        <article class="guide-entry" id="day-13">
+          <div class="guide-date"><span>DAY 13</span><time datetime="2026-10-23">Oct 23 · Fri</time></div>
+          <div>
+            <h3>Compute surplus and funding outcomes</h3>
+            <p>For each path, subtract end-year liability PV from assets to get surplus. Divide assets by liabilities for the funding ratio. Define 95% surplus-at-risk as opening surplus less the fifth-percentile end-year surplus.</p>
+            <p class="guide-check"><strong>Check.</strong> Tabulate mean end-year surplus and the fraction of paths below 100% funding. Keep probability of underfunding separate from the loss quantile.</p>
+            <a href="https://github.com/y68wu/pension-ldi-lab/blob/main/reports/comparison.csv">Reference results <span aria-hidden="true">↗</span></a>
+          </div>
+        </article>
+        <article class="guide-entry" id="day-14">
+          <div class="guide-date"><span>DAY 14</span><time datetime="2026-10-24">Oct 24 · Sat</time></div>
+          <div>
+            <h3>Allocate surplus volatility</h3>
+            <p>Compute each Euler contribution as covariance of the component with total surplus divided by total surplus volatility. Include five sleeve residuals and a net rate mismatch component that includes the swap.</p>
+            <p class="guide-check"><strong>Check.</strong> Reconcile the signed components to total surplus standard deviation. Treat negative contributions as diversification under this sample and metric.</p>
+            <a href="https://github.com/y68wu/pension-ldi-lab/blob/main/reports/euler.csv">Euler attribution <span aria-hidden="true">↗</span></a>
+          </div>
+        </article>
+      </section>
+      <section class="guide-week" id="week-3" aria-labelledby="week-3-title">
+        <header>
+          <p class="micro">WEEK 03 / Oct 25–Oct 31</p>
+          <h2 id="week-3-title">Set the hedge and test liquidity</h2>
+          <p>Compare 101 DV01 targets and assess collateral calls, capital calls and benefit payments under stress.</p>
+        </header>
+        <article class="guide-entry" id="day-15">
+          <div class="guide-date"><span>DAY 15</span><time datetime="2026-10-25">Oct 25 · Sun</time></div>
+          <div>
+            <h3>Price a 15Y swap overlay</h3>
+            <p>Derive the par fixed rate from annual payments on the opening curve. Reprice the remaining swap plus first net coupon at the one-year horizon, and use clean instantaneous repricing in the liquidity test.</p>
+            <p class="guide-check"><strong>Check.</strong> An opening par swap has zero value. A receive-fixed overlay loses value when the entire curve rises. Above the natural hedge, positive notional means receive fixed.</p>
+            <a href="https://github.com/y68wu/pension-ldi-lab/blob/main/src/pension_ldi/model.py">Overlay implementation <span aria-hidden="true">↗</span></a>
+          </div>
+        </article>
+        <article class="guide-entry" id="day-16">
+          <div class="guide-date"><span>DAY 16</span><time datetime="2026-10-26">Oct 26 · Mon</time></div>
+          <div>
+            <h3>Translate a DV01 target into notional</h3>
+            <p>Subtract natural asset DV01 from the target dollar DV01, then divide by swap DV01 per CAD of notional. Evaluate targets from 0% to 100% in one-point increments.</p>
+            <p class="guide-check"><strong>Check.</strong> Verify the natural book requires zero overlay, 0% requires pay-fixed and 100% matches total parallel DV01. Residual tenor-specific exposures remain.</p>
+            <a href="https://github.com/y68wu/pension-ldi-lab/blob/main/reports/frontier.csv">Hedge frontier data <span aria-hidden="true">↗</span></a>
+          </div>
+        </article>
+        <article class="guide-entry" id="day-17">
+          <div class="guide-date"><span>DAY 17</span><time datetime="2026-10-27">Oct 27 · Tue</time></div>
+          <div>
+            <h3>Compare risk and expected surplus</h3>
+            <p>For each target, evaluate common Monte Carlo paths and plot expected end-year surplus against 95% surplus-at-risk. Preserve a separate natural-book benchmark rather than rounding it to the slider grid.</p>
+            <p class="guide-check"><strong>Check.</strong> Compare about CAD 90.0M of surplus-at-risk for the natural book with CAD 78.4M for the 100% parallel hedge. Verify the difference on the underlying report table.</p>
+            <a href="https://github.com/y68wu/pension-ldi-lab/blob/main/reports/comparison.csv">Hedge comparison table <span aria-hidden="true">↗</span></a>
+          </div>
+        </article>
+        <article class="guide-entry" id="day-18">
+          <div class="guide-date"><span>DAY 18</span><time datetime="2026-10-28">Oct 28 · Wed</time></div>
+          <div>
+            <h3>Build the 30-day cash resource book</h3>
+            <p>Assign monetizable shares and haircuts to public equity, long bonds and credit. Apply stressed mark changes before the sale fractions and haircuts. Exclude real assets and private equity from immediate eligible resources.</p>
+            <p class="guide-check"><strong>Check.</strong> Reprice the bond and credit sleeves over a 0 to 400 bp stress grid. Ensure stronger equity losses reduce stressed equity sale proceeds.</p>
+            <a href="https://github.com/y68wu/pension-ldi-lab/blob/main/src/pension_ldi/liquidity.py">Liquidity implementation <span aria-hidden="true">↗</span></a>
+          </div>
+        </article>
+        <article class="guide-entry" id="day-19">
+          <div class="guide-date"><span>DAY 19</span><time datetime="2026-10-29">Oct 29 · Thu</time></div>
+          <div>
+            <h3>Add margin and payment obligations</h3>
+            <p>Use 30% equity drawdown and +200 bp as the sample shock. Combine variation margin on a negative swap mark with a 20% private equity capital call and one-twelfth of year-one benefits.</p>
+            <p class="guide-check"><strong>Check.</strong> Only unfavorable swap value enters margin outflows. A swap gain does not count as immediately spendable cash in this simplified stress.</p>
+            <a href="https://github.com/y68wu/pension-ldi-lab/blob/main/tests/test_liquidity.py">Liquidity scenario tests <span aria-hidden="true">↗</span></a>
+          </div>
+        </article>
+        <article class="guide-entry" id="day-20">
+          <div class="guide-date"><span>DAY 20</span><time datetime="2026-10-30">Oct 30 · Fri</time></div>
+          <div>
+            <h3>Compare coverage with solvency</h3>
+            <p>Calculate liquidity coverage as stressed resources divided by cash outflows. Calculate headroom as resources less outflows, independently of one-year funding ratios.</p>
+            <p class="guide-check"><strong>Check.</strong> The 100% DV01 hedge leaves about CAD 61.7M of cash shortfall under the default stress despite lower modeled surplus-at-risk. Reconcile resources and all three outflow lines.</p>
+            <a href="https://github.com/y68wu/pension-ldi-lab/blob/main/reports/liquidity.csv">Liquidity results <span aria-hidden="true">↗</span></a>
+          </div>
+        </article>
+        <article class="guide-entry" id="day-21">
+          <div class="guide-date"><span>DAY 21</span><time datetime="2026-10-31">Oct 31 · Sat</time></div>
+          <div>
+            <h3>Screen the hedge grid with a cash constraint</h3>
+            <p>Filter the default frontier to cases where stressed resources cover outflows, then choose the smallest modeled surplus-at-risk among the survivors.</p>
+            <p class="guide-check"><strong>Check.</strong> The unconstrained minimum is 83% coverage with CAD 73.3M of surplus-at-risk. The cash screen selects 76%, with CAD 73.9M of surplus-at-risk and CAD 1.41M of stressed headroom under this case.</p>
+            <a href="./index.html#liquidity">Run the liquidity desk <span aria-hidden="true">↗</span></a>
+          </div>
+        </article>
+      </section>
+      <section class="guide-week" id="week-4" aria-labelledby="week-4-title">
+        <header>
+          <p class="micro">WEEK 04 / Nov 01–Nov 07</p>
+          <h2 id="week-4-title">Validate and ship the research</h2>
+          <p>Reconcile the numbers, disclose the limitations and expose the Python outputs in an interactive decision lab.</p>
+        </header>
+        <article class="guide-entry" id="day-22">
+          <div class="guide-date"><span>DAY 22</span><time datetime="2026-11-01">Nov 01 · Sun</time></div>
+          <div>
+            <h3>Verify pricing and simulation invariants</h3>
+            <p>Test par instruments, finite-difference DV01, swap direction, repeatable scenarios and the Euler reconciliation with synthetic fixtures. Run market alignment and liquidity tests alongside the model suite.</p>
+            <p class="guide-check"><strong>Check.</strong> Require tests to run without downloading data. Keep the published statistical result reproducible from separately fetched public inputs.</p>
+            <a href="https://github.com/y68wu/pension-ldi-lab/actions">Automated checks <span aria-hidden="true">↗</span></a>
+          </div>
+        </article>
+        <article class="guide-entry" id="day-23">
+          <div class="guide-date"><span>DAY 23</span><time datetime="2026-11-02">Nov 02 · Mon</time></div>
+          <div>
+            <h3>Publish numerical evidence</h3>
+            <p>Write tables for benefit cash flows, key-rate DV01, baseline and full-hedge comparison, Euler contributions and the 101-point frontier. Export the same model outputs to the website payload.</p>
+            <p class="guide-check"><strong>Check.</strong> Use common histogram edges so comparisons retain consistent bins. Assert that every path is counted for every displayed target.</p>
+            <a href="https://github.com/y68wu/pension-ldi-lab/blob/main/src/pension_ldi/analysis.py">Report generator <span aria-hidden="true">↗</span></a>
+          </div>
+        </article>
+        <article class="guide-entry" id="day-24">
+          <div class="guide-date"><span>DAY 24</span><time datetime="2026-11-03">Nov 03 · Tue</time></div>
+          <div>
+            <h3>Build the funding lab controls</h3>
+            <p>Add presets for the natural book, a 75% sample target and the full DV01 match. Update the frontier marker, funding distribution, swap notional and decomposition from the selected case.</p>
+            <p class="guide-check"><strong>Check.</strong> Check that the natural case uses exact asset DV01, and that moving the slider does not reroll simulated paths.</p>
+            <a href="./index.html#hedge">Open the funding lab <span aria-hidden="true">↗</span></a>
+          </div>
+        </article>
+        <article class="guide-entry" id="day-25">
+          <div class="guide-date"><span>DAY 25</span><time datetime="2026-11-04">Nov 04 · Wed</time></div>
+          <div>
+            <h3>Build a liquidity scenario ticket</h3>
+            <p>Let visitors change equity drawdown, parallel rate rises and the private capital call. A sample button populates the default stress. Split cash resources and outflows so the source of a shortfall stays visible.</p>
+            <p class="guide-check"><strong>Check.</strong> Verify that the same hedge target feeds both labs and compare the displayed default cash values with the Python output.</p>
+            <a href="./index.html#liquidity">Try the liquidity ticket <span aria-hidden="true">↗</span></a>
+          </div>
+        </article>
+        <article class="guide-entry" id="day-26">
+          <div class="guide-date"><span>DAY 26</span><time datetime="2026-11-05">Nov 05 · Thu</time></div>
+          <div>
+            <h3>Write the methodology and limitations</h3>
+            <p>Document the synthetic benefits, ETF basis risk, illustrative appraisal adjustment, Gaussian assumption, flat long-end extrapolation and simplified collateral treatment.</p>
+            <p class="guide-check"><strong>Check.</strong> Keep both the 100% parallel DV01 match and the possibility of remaining growth-asset and key-rate risks in the public write-up.</p>
+            <a href="https://github.com/y68wu/pension-ldi-lab/blob/main/README.md">Read methods and limitations <span aria-hidden="true">↗</span></a>
+          </div>
+        </article>
+        <article class="guide-entry" id="day-27">
+          <div class="guide-date"><span>DAY 27</span><time datetime="2026-11-06">Nov 06 · Fri</time></div>
+          <div>
+            <h3>Verify the website in a clean checkout</h3>
+            <p>Check the repository-relative URLs, keyboard controls, mobile sizing and public result payload. Verify the notebook can read the published outputs from a clean checkout.</p>
+            <p class="guide-check"><strong>Check.</strong> Keep the Yahoo close series in the local workspace. Publish aggregated outputs and metadata with the code and documentation.</p>
+            <a href="https://github.com/y68wu/pension-ldi-lab/blob/main/notebooks/01_pension_ldi.ipynb">Analysis notebook <span aria-hidden="true">↗</span></a>
+          </div>
+        </article>
+        <article class="guide-entry" id="day-28">
+          <div class="guide-date"><span>DAY 28</span><time datetime="2026-11-07">Nov 07 · Sat</time></div>
+          <div>
+            <h3>Publish the research package</h3>
+            <p>Serve the interactive study and this handbook from the repository. Link both pages to the model and its published evidence so visitors can reproduce the work.</p>
+            <p class="guide-check"><strong>Check.</strong> Verify the live example changes the funding view and runs the default cash stress. Keep illustrative dates separate from the observed market dates.</p>
+            <a href="./index.html">Return to the live study <span aria-hidden="true">↗</span></a>
+          </div>
+        </article>
+      </section>
+
+      <div class="guide-next">
+        <p>Choose a target and test the plan’s ability to raise cash.</p>
+        <a class="button primary" href="index.html#hedge">Open the funding lab <span aria-hidden="true">↗</span></a>
+      </div>
+    </div>
+  </div>
+</main>
+<footer class="site-footer"><div class="shell"><a class="brand" href="./"><img src="assets/mark.svg" alt="" width="27" height="27"><strong>LONGVIEW</strong><span>/ PENSION RISK</span></a><span>Canadian defined-benefit plan · Illustrative research</span><a href="https://github.com/y68wu/pension-ldi-lab">GitHub ↗</a></div></footer>
+</body>
+</html>

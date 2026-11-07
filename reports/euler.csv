@@ -1,0 +1,13 @@
+case,label,value
+no overlay,Public equity,28559083.44830374
+no overlay,Long bonds,10378159.006460698
+no overlay,Real assets,12180917.92729159
+no overlay,Private equity,15738479.573205823
+no overlay,Credit,3544989.919427552
+no overlay,Net rate mismatch,19934281.966404647
+100% DV01,Public equity,37188273.63317728
+100% DV01,Long bonds,8258253.541567037
+100% DV01,Real assets,18827608.05573977
+100% DV01,Private equity,20154022.185186908
+100% DV01,Credit,2768118.4329078537
+100% DV01,Net rate mismatch,-489123.45675773657

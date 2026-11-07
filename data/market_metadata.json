@@ -1,0 +1,55 @@
+{
+  "retrieved_utc": "2026-11-07T06:40:29+00:00",
+  "requested_start": "2012-01-01",
+  "requested_end_inclusive": "2026-10-21",
+  "sample_first_date": "2012-11-30",
+  "sample_last_date": "2026-09-29",
+  "sample_observations": 167,
+  "sample_monthly_changes": 166,
+  "curve_date": "2026-10-21",
+  "market_csv_sha256": "72bf5e35b519ce254e01d96958e70a3e19ac2fa1d4cfba1e2f46b77bb45a28e4",
+  "curve_csv_sha256": "57b3af25035b984c140936a0652742b6606338b196338e1e1487e1cdab339b33",
+  "curve_tenors_years": [
+    0.25,
+    1,
+    2,
+    5,
+    10,
+    15,
+    20,
+    25,
+    30
+  ],
+  "sources": {
+    "asset_levels": "Yahoo Finance distribution-adjusted closes via yfinance",
+    "usd_cad": "Yahoo Finance USDCAD=X close in CAD per USD via yfinance",
+    "goc_zero_curve": "https://www.bankofcanada.ca/stats/results/csv?lookupPage=lookup_yield_curve.php&startRange=1986-01-01&searchRange=&dFrom=2012-01-01&dTo=2026-10-21"
+  },
+  "monthly_asset_baskets": {
+    "public_equity": {
+      "XIU.TO": 0.5,
+      "VFV.TO": 0.5
+    },
+    "long_bonds": {
+      "XLB.TO": 1.0
+    },
+    "real_assets": {
+      "ZRE.TO": 0.5,
+      "IGF": 0.5
+    },
+    "private_equity": {
+      "PSP": 1.0
+    },
+    "credit": {
+      "XCB.TO": 1.0
+    }
+  },
+  "converted_from_usd_to_cad": [
+    "IGF",
+    "PSP"
+  ],
+  "software": {
+    "pandas": "3.1.1",
+    "yfinance": "1.8.0"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "as_of": "2026-10-21",
+  "calibration_start": "2012-12-31",
+  "calibration_end": "2026-09-29",
+  "observations": 166,
+  "paths": 20000,
+  "seed": 20261107,
+  "initial_assets": 1050000000.0,
+  "initial_liabilities": 1000000000.0000001,
+  "initial_surplus": 49999999.99999988,
+  "initial_funding_ratio": 1.0499999999999998,
+  "liability_duration": 14.999999999999993,
+  "liability_dv01": 1499999.9999999995,
+  "asset_dv01": 575789.430890376,
+  "natural_hedge_ratio": 0.3838596205935841,
+  "first_year_benefit": 15535892.434078565,
+  "alpha": 0.55,
+  "smoothed_private_vol": 0.09995558848840388,
+  "desmoothed_private_vol": 0.1854031344274716,
+  "liquidity_constrained_min_sar_ratio": 0.76
+}

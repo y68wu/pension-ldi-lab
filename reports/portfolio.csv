@@ -1,0 +1,6 @@
+label,weight,proxy
+Public equity,0.3,XIU + VFV
+Long bonds,0.35,XLB
+Real assets,0.15,ZRE + IGF
+Private equity,0.1,PSP
+Credit,0.1,XCB

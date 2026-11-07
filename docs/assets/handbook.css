@@ -1,0 +1,55 @@
+.guide-page { background: var(--paper); }
+.guide-hero .kicker { color: #bfe8d4; }
+.guide-hero {
+  padding: clamp(3.6rem, 8vw, 7.2rem) 0 clamp(3rem, 6vw, 5.5rem);
+  color: #f7f5ea;
+  background:
+    radial-gradient(ellipse at 75% 10%, #28554b 0, transparent 58%),
+    repeating-linear-gradient(0deg, transparent 0 35px, #f1fff30b 35px 36px),
+    repeating-linear-gradient(90deg, transparent 0 35px, #f1fff30b 35px 36px),
+    #112a29;
+}
+.guide-hero h1 { margin: 1.1rem 0 1.45rem; font: 400 clamp(3.2rem, 9vw, 7.25rem)/.92 var(--serif); letter-spacing: -.075em; }
+.guide-hero .shell > p:not(.kicker) { max-width: 36rem; margin: 0; color: #d5e1d6; font-size: clamp(1rem, 2vw, 1.22rem); line-height: 1.6; }
+.guide-meta { display: flex; flex-wrap: wrap; column-gap: 2rem; row-gap: .9rem; margin: 2rem 0 0; }
+.guide-meta div { border-left: 1px solid #78aa94; padding-left: .8rem; }
+.guide-meta dt { color: var(--mint); font-family: var(--mono); font-size: 1.05rem; font-weight: 750; }
+.guide-meta dd { color: #d5e1d6; margin: .2rem 0 0; font-size: .78rem; }
+.guide-layout { display: grid; grid-template-columns: minmax(11rem, 1fr) minmax(0, 3fr); gap: clamp(2rem, 7vw, 6.2rem); align-items: start; padding-block: clamp(2rem, 6vw, 5.5rem); }
+.guide-side { position: sticky; top: 6rem; padding-top: .4rem; }
+.guide-side h2 { margin: 0 0 .75rem; color: #466155; font-size: .78rem; font-family: ui-monospace, SFMono-Regular, monospace; letter-spacing: .06em; text-transform: uppercase; }
+.guide-side ol { padding: 0; margin: 0 0 1.1rem; list-style: none; }
+.guide-side li { border-top: 1px solid #cdd7cb; }
+.guide-side li:last-child { border-bottom: 1px solid #cdd7cb; }
+.guide-side li a { display: flex; gap: .6rem; align-items: baseline; padding: .65rem 0; text-decoration: none; font-size: .89rem; font-weight: 650; }
+.guide-side li a:hover, .guide-entry a:hover { text-decoration: underline; }
+.guide-side li a span { color: #477062; font-family: ui-monospace, SFMono-Regular, monospace; font-size: .75rem; }
+.guide-note { margin: 0 0 3.25rem; border-left: 3px solid #50957a; background: #e7efe3; color: #29483b; padding: .8rem 1rem; line-height: 1.65; }
+.guide-week { margin-bottom: 3.25rem; scroll-margin-top: 6.6rem; }
+.guide-week > header { margin-bottom: 1.1rem; }
+.guide-week > header .micro { margin: 0 0 .35rem; color: #477062; text-transform: uppercase; }
+.guide-week > header h2 { margin: 0; font: 400 clamp(1.75rem, 4vw, 3.5rem)/1.05 var(--serif); letter-spacing: -.045em; }
+.guide-week > header p:last-child { color: #506557; margin: .65rem 0 0; line-height: 1.6; }
+.guide-entry { display: grid; grid-template-columns: 7rem minmax(0, 1fr); gap: 1rem; padding: 1.25rem 0 1.4rem; border-top: 1px solid #cdd7cb; }
+.guide-entry:last-child { border-bottom: 1px solid #cdd7cb; }
+.guide-date { color: #466155; font-size: .72rem; font-family: ui-monospace, SFMono-Regular, monospace; }
+.guide-date span { color: #236149; display: block; font-weight: 750; margin: .22rem 0 .3rem; }
+.guide-date time { text-transform: uppercase; }
+.guide-entry h3 { margin: 0 0 .45rem; font-size: clamp(1.1rem, 2.25vw, 1.38rem); line-height: 1.25; letter-spacing: -.022em; }
+.guide-entry p { margin: 0 0 .55rem; line-height: 1.62; }
+.guide-check { color: #506557; font-size: .9rem; }
+.guide-entry a { color: #225e48; font-size: .85rem; font-weight: 750; text-decoration: none; }
+.guide-next { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: .7rem 1rem; border-top: 1px solid #cdd7cb; padding-block: 1.5rem 0; }
+.guide-next p { margin: 0; font-weight: 650; }
+.guide-next .button { background: #20483c; color: #fff; }
+.guide-next .button:hover { background: #2c6251; }
+@media (max-width: 720px) {
+  .guide-layout { grid-template-columns: 1fr; gap: 1.8rem; }
+  .guide-side { position: static; }
+  .guide-side ol { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .25rem .8rem; }
+  .guide-side li:last-child { border-bottom: 0; }
+  .guide-week { scroll-margin-top: 2rem; }
+  .guide-entry { grid-template-columns: 1fr; gap: .5rem; }
+  .guide-date { display: flex; flex-wrap: wrap; gap: .7rem; align-items: baseline; }
+  .guide-date span { margin: 0; }
+}
